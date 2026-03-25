@@ -1,7 +1,8 @@
 # skill-forge
 
-[![Validate](https://github.com/your-org/skill-forge/actions/workflows/validate.yml/badge.svg)](https://github.com/your-org/skill-forge/actions/workflows/validate.yml)
+[![Validate](https://github.com/Choreogrifi/skill-forge/actions/workflows/validate.yml/badge.svg)](https://github.com/Choreogrifi/skill-forge/actions/workflows/validate.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Docs](https://img.shields.io/badge/docs-skill--forge-blue)](https://choreogrifi.github.io/skill-forge/)
 
 A filesystem-based skill management system for LLMs.
 
@@ -16,7 +17,7 @@ The state lives in the filesystem. `ls $LLM_SKILLS_HOME/skills/` shows you every
 ## Install
 
 ```bash
-git clone https://github.com/your-org/skill-forge.git
+git clone https://github.com/Choreogrifi/skill-forge.git
 cd skill-forge
 bash scripts/install.sh
 source ~/.bashrc  # or ~/.zshrc
@@ -57,7 +58,7 @@ Transitioning between states is a rename. Visibility is controlled by symlinks i
 
 Run `agents audit` at any time to detect and repair violations.
 
-See [docs/how-it-works.md](docs/how-it-works.md) for a full explanation.
+See [How It Works](https://choreogrifi.github.io/skill-forge/how-it-works) for a full explanation.
 
 ## CLI Reference
 
@@ -72,7 +73,7 @@ See [docs/how-it-works.md](docs/how-it-works.md) for a full explanation.
 | `agents audit` | Detect and auto-fix all violations |
 | `agents doctor` | Self-check paths, permissions, and PATH |
 
-See [docs/cli.md](docs/cli.md) for full documentation.
+See the [CLI Reference](https://choreogrifi.github.io/skill-forge/cli) for full documentation.
 
 ## Safe Testing
 
@@ -95,7 +96,7 @@ disable-model-invocation: true
 ---
 ```
 
-See [docs/skill-spec.md](docs/skill-spec.md) for the full specification.
+See the [SKILL.md Specification](https://choreogrifi.github.io/skill-forge/skill-spec) for the full specification.
 
 ## Contributing
 

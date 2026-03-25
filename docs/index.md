@@ -11,7 +11,7 @@ Skills are directories. State is encoded in the directory name. Symlinks control
 ## Install
 
 ```bash
-git clone https://github.com/your-org/skill-forge.git
+git clone https://github.com/Choreogrifi/skill-forge.git
 cd skill-forge
 bash scripts/install.sh
 ```

@@ -16,7 +16,7 @@ title: Getting Started
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-org/skill-forge.git
+git clone https://github.com/Choreogrifi/skill-forge.git
 cd skill-forge
 ```
 
