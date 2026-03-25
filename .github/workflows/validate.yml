@@ -1,0 +1,147 @@
+name: Validate
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x scripts/agents.sh scripts/install.sh
+
+      - name: Syntax check — agents.sh
+        run: bash -n scripts/agents.sh
+
+      - name: Syntax check — install.sh
+        run: bash -n scripts/install.sh
+
+      - name: Validate skill directory naming
+        run: |
+          set -euo pipefail
+          errors=0
+          valid_states="active review deactivated decommissioned"
+
+          while IFS= read -r -d '' dir; do
+            dir_name=$(basename "$dir")
+            state="${dir_name##*.}"
+            name="${dir_name%.*}"
+
+            # A directory with no dot separator will have state == dir_name
+            if [[ "$name" == "$state" ]]; then
+              echo "FAIL: '${dir_name}' has no dot separator — cannot extract name and state"
+              ((errors++)) || true
+              continue
+            fi
+
+            valid=false
+            for s in $valid_states; do
+              [[ "$state" == "$s" ]] && valid=true && break
+            done
+
+            if $valid; then
+              echo "OK: ${dir_name}  (name=${name}, state=${state})"
+            else
+              echo "FAIL: '${dir_name}' has invalid state '${state}'. Valid: ${valid_states}"
+              ((errors++)) || true
+            fi
+          done < <(find skills -maxdepth 1 -mindepth 1 -type d -print0 2>/dev/null | sort -z)
+
+          if [[ $errors -gt 0 ]]; then
+            echo ""
+            echo "Directory naming validation failed with ${errors} error(s)."
+            exit 1
+          fi
+          echo ""
+          echo "All skill directories pass naming validation."
+
+      - name: Validate SKILL.md frontmatter
+        run: |
+          set -euo pipefail
+          errors=0
+
+          while IFS= read -r -d '' skill_md; do
+            dir_name=$(basename "$(dirname "$skill_md")")
+            expected_name="${dir_name%.*}"
+            echo "Checking: $skill_md"
+
+            # Extract YAML frontmatter (content between the first pair of ---)
+            frontmatter=$(awk 'BEGIN{found=0} /^---/{found++; next} found==1{print}' "$skill_md")
+
+            # name field
+            fm_name=$(printf '%s\n' "$frontmatter" | grep -E '^name:' | head -1 | sed 's/^name:[[:space:]]*//')
+            if [[ -z "$fm_name" ]]; then
+              echo "  FAIL: 'name' field missing"
+              ((errors++)) || true
+            elif [[ "$fm_name" != "$expected_name" ]]; then
+              echo "  FAIL: name '${fm_name}' does not match directory '${expected_name}'"
+              ((errors++)) || true
+            else
+              echo "  OK: name matches directory"
+            fi
+
+            # description field
+            fm_desc=$(printf '%s\n' "$frontmatter" | grep -E '^description:' | head -1 | sed 's/^description:[[:space:]]*//')
+            if [[ -z "$fm_desc" ]]; then
+              echo "  FAIL: 'description' is absent or empty"
+              ((errors++)) || true
+            else
+              echo "  OK: description present"
+            fi
+
+            # disable-model-invocation: true
+            if printf '%s\n' "$frontmatter" | grep -qE '^disable-model-invocation:[[:space:]]*true'; then
+              echo "  OK: disable-model-invocation: true"
+            else
+              echo "  FAIL: 'disable-model-invocation: true' missing"
+              ((errors++)) || true
+            fi
+
+          done < <(find skills -maxdepth 2 -name "SKILL.md" -print0 2>/dev/null | sort -z)
+
+          if [[ $errors -gt 0 ]]; then
+            echo ""
+            echo "Frontmatter validation failed with ${errors} error(s)."
+            exit 1
+          fi
+          echo ""
+          echo "All SKILL.md files pass frontmatter validation."
+
+      - name: Smoke test — install to temp environment
+        run: |
+          set -euo pipefail
+          export LLM_SKILLS_HOME=/tmp/skills-test
+          bash scripts/install.sh
+          # Run agents ls directly via the installed binary
+          export PATH="$HOME/.local/bin:$PATH"
+          LLM_SKILLS_HOME=/tmp/skills-test agents ls
+
+      - name: Smoke test — idempotency (install twice)
+        run: |
+          set -euo pipefail
+          export LLM_SKILLS_HOME=/tmp/skills-test-idem
+          bash scripts/install.sh
+          bash scripts/install.sh
+          echo "Idempotency check passed — no errors on second run."
+
+      - name: Smoke test — CLI state transitions
+        run: |
+          set -euo pipefail
+          export LLM_SKILLS_HOME=/tmp/skills-test-states
+          export PATH="$HOME/.local/bin:$PATH"
+          bash scripts/install.sh
+
+          # Activate → review → activate cycle
+          LLM_SKILLS_HOME=/tmp/skills-test-states agents review architect
+          LLM_SKILLS_HOME=/tmp/skills-test-states agents activate architect
+
+          # Status must pass
+          LLM_SKILLS_HOME=/tmp/skills-test-states agents status
+          echo "State transition tests passed."
