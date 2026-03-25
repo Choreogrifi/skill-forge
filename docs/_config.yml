@@ -1,0 +1,31 @@
+title: skill-forge
+description: Filesystem-based skill lifecycle manager for LLMs
+theme: minima
+url: https://choreogrifi.github.io
+baseurl: /skill-forge
+
+# Google Analytics 4
+# Replace with your GA4 Measurement ID (format: G-XXXXXXXXXX)
+# Find it at: analytics.google.com → Admin → Data Streams → your stream
+google_analytics: REPLACE_WITH_GA4_MEASUREMENT_ID
+
+# Google Search Console ownership verification
+# 1. Go to search.google.com/search-console
+# 2. Add property → URL prefix → https://choreogrifi.github.io/skill-forge/
+# 3. Choose "HTML tag" verification method
+# 4. Copy only the content="XXXX" value from the meta tag Google provides
+# 5. Replace the placeholder below, then submit sitemap.xml after the site rebuilds
+#    Sitemap URL: https://choreogrifi.github.io/skill-forge/sitemap.xml
+google_site_verification: REPLACE_WITH_GOOGLE_SITE_VERIFICATION
+
+# Jekyll settings
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+# Navigation
+header_pages:
+  - getting-started.md
+  - how-it-works.md
+  - cli.md
+  - skill-spec.md
