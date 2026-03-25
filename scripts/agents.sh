@@ -93,6 +93,48 @@ symlinks_exist() {
 }
 
 # ---------------------------------------------------------------------------
+# Named functions required by spec
+# ---------------------------------------------------------------------------
+
+# Return the current state of a skill by name.
+get_state() {
+  local name="$1"
+  local dir
+  dir=$(find_skill_dir "$name")
+  dir_to_state "$dir"
+}
+
+# Print all skill directories (one per line, sorted).
+list_skills() {
+  find "$SKILLS_DIR" -maxdepth 1 -mindepth 1 -type d -print0 2>/dev/null \
+    | sort -z | xargs -0 -I{} printf '%s\n' '{}'
+}
+
+# Validate SKILL.md structure for every skill. Returns 1 if any fail.
+validate_structure() {
+  local errors=0
+  while IFS= read -r -d '' skill_md; do
+    validate_skill_md "$skill_md" || ((errors++)) || true
+  done < <(find "$SKILLS_DIR" -maxdepth 2 -name "SKILL.md" -print0 2>/dev/null | sort -z)
+  return "$errors"
+}
+
+# Enforce symlink invariant for a single skill: active→links exist, else→links absent.
+reconcile_symlinks() {
+  local name="$1"
+  local dir
+  dir=$(find_skill_dir "$name")
+  local state
+  state=$(dir_to_state "$dir")
+
+  if [[ "$state" == "active" ]]; then
+    create_symlinks "$name" "$dir"
+  else
+    remove_symlinks "$name"
+  fi
+}
+
+# ---------------------------------------------------------------------------
 # State transition
 # ---------------------------------------------------------------------------
 
