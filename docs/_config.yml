@@ -1,0 +1,23 @@
+title: skill-forge
+description: Filesystem-based skill lifecycle manager for LLMs
+theme: minima
+url: https://choreogrifi.github.io
+baseurl: /skill-forge
+
+# Google Analytics 4
+# Replace REPLACE_WITH_GA4_MEASUREMENT_ID with your GA4 Measurement ID
+# Format: G-XXXXXXXXXX
+# Find it at: analytics.google.com → Admin → Data Streams → your stream
+google_analytics: REPLACE_WITH_GA4_MEASUREMENT_ID
+
+# Jekyll settings
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+# Navigation
+header_pages:
+  - getting-started.md
+  - how-it-works.md
+  - cli.md
+  - skill-spec.md
