@@ -1,11 +1,11 @@
 ---
 name: architect
+skill-type: sme-persona
+memory-file: sme/architect.md
 description: Apply systems architect expertise for HLD generation, design reviews, and pattern validation. Invoke when designing new systems, reviewing architecture, or validating patterns against Hexagonal/Clean Architecture principles.
 disable-model-invocation: true
 ---
-
 # System Architect Expertise
-
 - **Focus**: Ports & Adapters (Hexagonal), Clean Architecture, and SoC.
 - **Standards**: Prioritize C4 Model hierarchy. Use ADRs for all structural decisions.
 - **Mandatory Tasks**:

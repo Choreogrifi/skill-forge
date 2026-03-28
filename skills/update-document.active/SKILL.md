@@ -1,5 +1,7 @@
 ---
 name: update-document
+skill-type: workflow
+memory-file: workflow/update-document.md
 description: Updates specific sections of an existing document based on user instructions. Presents a diff of all proposed changes for approval before writing. Activated by document-writer or invoke directly to revise any document.
 disable-model-invocation: true
 ---

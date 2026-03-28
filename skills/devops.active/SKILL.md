@@ -1,5 +1,7 @@
 ---
 name: devops
+skill-type: sme-persona
+memory-file: sme/devops.md
 description: Apply GCP DevOps expertise for Terraform, CI/CD pipelines, and cloud infrastructure tasks. Invoke when writing IaC, configuring Cloud Build, or setting up GCP monitoring and logging.
 disable-model-invocation: true
 ---

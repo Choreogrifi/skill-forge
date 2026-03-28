@@ -1,5 +1,7 @@
 ---
 name: manage-github
+skill-type: workflow
+memory-file: workflow/manage-github.md
 description: Handles all GitHub and local git operations for the current repository using the git and gh CLIs. Every action is presented for user confirmation before execution. Activated by manage-git; also invoke directly for GitHub-specific operations.
 disable-model-invocation: true
 ---

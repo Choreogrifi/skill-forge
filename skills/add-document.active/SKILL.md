@@ -1,5 +1,7 @@
 ---
 name: add-document
+skill-type: workflow
+memory-file: workflow/add-document.md
 description: Appends new sections, content blocks, or entries to an existing document. Shows the proposed addition in context before writing. Activated by document-writer or invoke directly to extend any document.
 disable-model-invocation: true
 ---

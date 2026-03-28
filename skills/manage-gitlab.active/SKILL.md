@@ -1,5 +1,7 @@
 ---
 name: manage-gitlab
+skill-type: workflow
+memory-file: workflow/manage-gitlab.md
 description: Handles all GitLab and local git operations for the current repository using the git and glab CLIs. Every action is presented for user confirmation before execution. Activated by manage-git; also invoke directly for GitLab-specific operations.
 disable-model-invocation: true
 ---

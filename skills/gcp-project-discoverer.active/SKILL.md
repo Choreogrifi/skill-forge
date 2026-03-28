@@ -1,5 +1,7 @@
 ---
 name: gcp-project-discoverer
+skill-type: workflow
+memory-file: workflow/gcp-project-discoverer.md
 description: Discovers existing GCP resources in a given project using gcloud CLI and returns a structured as-is inventory. Invoked by terraform-creator when bootstrapping a new terraform folder to cross-reference live infrastructure. Also invoke directly when you need an inventory of a GCP project.
 disable-model-invocation: true
 ---

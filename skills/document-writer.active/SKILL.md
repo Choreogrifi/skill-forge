@@ -1,5 +1,7 @@
 ---
 name: document-writer
+skill-type: workflow
+memory-file: workflow/document-writer.md
 description: Guided workflow to create, review, update, or extend any document from a curated template library. Routes to the correct SME skill based on the user's selection. Invoke when the user wants to write, improve, or add to a document.
 disable-model-invocation: true
 ---

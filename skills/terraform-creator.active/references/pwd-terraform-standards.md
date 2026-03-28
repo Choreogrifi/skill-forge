@@ -1,6 +1,6 @@
 # PWD Terraform Standards
 
-Derived from the active project's Terraform directory.
+Derived from `/Users/leond/development/in-store-stock/in-store-stock-worker/terraform`.
 
 ---
 

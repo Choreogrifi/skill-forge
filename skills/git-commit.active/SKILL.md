@@ -1,5 +1,7 @@
 ---
 name: git-commit
+skill-type: workflow
+memory-file: workflow/git-commit.md
 description: Automate git commit creation — summarises workspace changes, proposes a commit message for user approval, then commits. Invoke when ready to commit staged or unstaged changes.
 disable-model-invocation: true
 ---

@@ -1,5 +1,7 @@
 ---
 name: write-readme
+skill-type: workflow
+memory-file: workflow/write-readme.md
 description: Drafts a production-quality, SEO-optimised Git README.md following the 2026 best-layout standard. Confirms file location with the user before writing. Activated by document-writer or invoke directly for any README creation task.
 disable-model-invocation: true
 ---

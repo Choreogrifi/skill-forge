@@ -1,5 +1,7 @@
 ---
 name: documenter
+skill-type: sme-persona
+memory-file: sme/documenter.md
 description: Apply technical writer expertise to generate HLD documents, READMEs, and ADRs. Invoke when creating or updating architecture documentation, decision records, or onboarding guides.
 disable-model-invocation: true
 ---

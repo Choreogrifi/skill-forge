@@ -1,5 +1,7 @@
 ---
 name: terraform-creator
+skill-type: workflow
+memory-file: workflow/terraform-creator.md
 description: Guided workflow to scaffold Terraform HCL in the current project. Detects an existing ./terraform folder and reads environment state to understand as-is; if absent, bootstraps the folder and invokes terraform-discoverer (codebase analysis) and optionally gcp-project-discoverer (live GCP inventory). Invoke when adding a new module, resource, or workload to a GCP project.
 disable-model-invocation: true
 ---

@@ -1,5 +1,7 @@
 ---
 name: manage-git
+skill-type: workflow
+memory-file: workflow/manage-git.md
 description: Git operations router for the current repository. Detects or asks whether the remote is GitHub or GitLab, then activates the correct sub-skill to handle the request with a confirmation gate before execution. Invoke for any git or platform operation on the current folder.
 disable-model-invocation: true
 ---
@@ -53,7 +55,7 @@ All subsequent user requests are handled entirely by the activated sub-skill. `m
 - **Auto-detection first:** Always attempt to detect the provider from the remote URL before asking.
 - **Never execute git commands directly:** All execution is delegated to the sub-skill.
 - **One provider per session:** Once routed, do not re-prompt unless the user explicitly asks to switch.
-- **Sub-skills are required:** If `manage-github` or `manage-gitlab` is not available at `~/.claude/skills/`, inform the user and stop.
+- **Sub-skills are required:** If `manage-github` or `manage-gitlab` is not available at `/Users/leond/.claude/skills/`, inform the user and stop.
 
 ## Related Skills
 

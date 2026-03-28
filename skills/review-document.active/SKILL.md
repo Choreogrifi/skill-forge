@@ -1,5 +1,7 @@
 ---
 name: review-document
+skill-type: workflow
+memory-file: workflow/review-document.md
 description: Reviews any document against structure, clarity, completeness, and discoverability standards. Returns a scored report with prioritised improvement recommendations. Activated by document-writer or invoke directly to review any markdown or text document.
 disable-model-invocation: true
 ---

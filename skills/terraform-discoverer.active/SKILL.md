@@ -1,5 +1,7 @@
 ---
 name: terraform-discoverer
+skill-type: workflow
+memory-file: workflow/terraform-discoverer.md
 description: Analyses a codebase to infer the GCP infrastructure it requires and proposes a structured Terraform resource plan. Invoked by terraform-creator when no ./terraform folder exists. Also invoke directly when you want a Terraform proposal derived from application code alone.
 disable-model-invocation: true
 ---

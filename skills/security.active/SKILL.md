@@ -1,5 +1,7 @@
 ---
 name: security
+skill-type: sme-persona
+memory-file: sme/security.md
 description: Apply GCP security expertise for IAM reviews, secret management, and OWASP vulnerability assessment. Invoke when reviewing permissions, handling credentials, or auditing code for security issues.
 disable-model-invocation: true
 ---

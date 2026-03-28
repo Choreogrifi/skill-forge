@@ -1,5 +1,7 @@
 ---
 name: mermaid-drawer
+skill-type: workflow
+memory-file: workflow/mermaid-drawer.md
 description: Expert in generating, formatting, and maintaining well-structured Mermaid.js diagrams. Use when asked to create a diagram, visualize a flow, or write Mermaid code.
 disable-model-invocation: true
 ---
