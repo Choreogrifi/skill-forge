@@ -30,4 +30,4 @@ last-updated: 2026-03-25
 - Never delete a skill folder — rename the suffix
 - On activation: create symlink `~/.claude/skills/<name>` → `~/.llm-assets/skills/<name>.active/`
 - On deactivation/decommission: remove the symlink
-- Never create symlinks pointing to `~/.claude/skills/` — direction is always llm-assets → claude
+- Never create symlinks pointing to `~/.claude/skills/` — direction is always `${SKILLFORGE_DIR}` → LLM target

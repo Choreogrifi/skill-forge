@@ -1,39 +1,39 @@
 ---
-skill: devops
+skill: devops-sme-sme
 skill-type: sme-persona
-description: GCP DevOps standards, Terraform IaC, Cloud Build CI/CD, observability and alerting
-last-updated: 2026-03-25
+description: DevOps standards, Terraform IaC, CI/CD pipelines, observability and alerting
+last-updated: 2026-03-28
 ---
 
 ## Terraform Standards
 
-- Modular structure: `foundation` (APIs, IAM, VPC, storage, secrets) and `workload` (compute, scheduling) — never mix
-- Remote GCS state management required — no local state in production
+- Modular structure: `foundation` (IAM, VPC, storage, secrets) and `workload` (compute, scheduling) — never mix
+- Remote state management required — no local state in shared environments
 - Terraform workspaces for environment separation (`dev`, `stg`, `prd`)
-- State bucket pattern: `gs://<team>-terraform-state/<project>/<env>.tfstate`
 - All resources tagged: `environment`, `team`, `managed-by = terraform`
 - No `terraform apply` without a reviewed `terraform plan` output
+- See `terraform-wf/references/terraform-standards.md` for naming and module conventions
 
-## Cloud Build CI/CD
+## CI/CD Pipelines
 
-- YAML pipelines only — no manual GCP Console steps in any automated flow
-- Security scanning step required in every build pipeline (e.g., `trivy`, `gitleaks`)
-- Workload Identity for Cloud Build — no service account key files in pipelines
+- YAML pipeline definitions only — no manual console steps in any automated flow
+- Security scanning step required in every build pipeline (e.g. `trivy`, `gitleaks`)
+- Workload identity / OIDC for CI/CD — no static credential files in pipelines
 - Build steps: lint → test → security scan → build → push → deploy
 - Rollback strategy documented in every deployment pipeline
 
-## GCP Observability
+## Observability
 
-- All services must emit structured JSON logs to Cloud Logging
-- Log-based metrics configured for ERROR and CRITICAL severity
-- Uptime checks for all externally-facing endpoints
+- All services must emit structured JSON logs with severity levels
+- Metrics configured for ERROR and CRITICAL severity
+- Uptime / health checks for all externally-facing endpoints
 - Alert policies required for: error rate, latency p99, resource exhaustion
-- Dashboards in Cloud Monitoring for every production service
+- Dashboards for every production service
 - SLO/SLA targets documented and linked to alert policies
 
 ## Infrastructure Conventions
 
-- Default region: `europe-west2`
-- Workload Identity: required for all compute (Cloud Run, GKE, Cloud Build)
-- VPC: private by default; no resources with public IPs unless explicitly justified
-- APIs: enable only what is required per project — disable unused APIs
+- Default region: `<fill in your region>` (e.g. us-east-1, us-central1, australiaeast)
+- Workload identity: required for all compute — no static credential files
+- VPC: private by default; no public IPs unless explicitly justified
+- APIs / services: enable only what is required — disable unused services

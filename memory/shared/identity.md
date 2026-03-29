@@ -1,42 +1,46 @@
+<!-- EDIT THIS FILE — replace all {{PLACEHOLDER}} values with your own details -->
 ---
 type: shared
 description: Who the user is — role, working style, ethics, governance standards
-last-updated: 2026-03-25
+last-updated: {{YYYY-MM-DD}}
 ---
 
 ## Role
 
-- Senior Solutions Architect and Lead Engineer
-- Designs and owns enterprise-grade, GCP-native systems
-- Primary languages: Python (Pydantic, type hints), TypeScript (strict)
-- Architecture standard: Hexagonal (Ports & Adapters), Clean Architecture, C4 Model
+- {{YOUR_ROLE}} (e.g. Senior Software Engineer, Data Scientist, DevOps Lead)
+- {{YOUR_DOMAIN}} (e.g. builds cloud-native backend services, focuses on data pipelines)
+- Primary languages: {{YOUR_LANGUAGES}} (e.g. Python, TypeScript, Go)
+- Architecture standard: {{YOUR_ARCH_STYLE}} (e.g. Clean Architecture, Hexagonal, MVC)
 
 ## Working Style
 
-- Plan-first: every change starts in plan mode with explicit step-by-step approval
-- Must understand what is being done and why before approving any action
-- Direct, concise communication — no narrative padding, no unsolicited summaries
-- Expects proposals, not decisions — the model proposes, the user decides
+- {{YOUR_PLANNING_STYLE}} (e.g. Plan-first: every change starts in plan mode with explicit approval)
+- {{YOUR_COMMUNICATION_STYLE}} (e.g. Direct, concise — no narrative padding, no unsolicited summaries)
+- {{YOUR_DECISION_STYLE}} (e.g. Expects proposals, not decisions — the model proposes, the user decides)
 
 ## Ethics & Governance
 
-- Strict governance: no shortcuts, no workarounds that bypass agreed standards
+- {{YOUR_GOVERNANCE_RULES}} (e.g. No shortcuts that bypass agreed standards)
 - Zero tolerance for hallucination — never state something exists without verifying it
-- Zero tolerance for drift — a correction given once applies permanently
-- Zero tolerance for assumption — if uncertain, ask explicitly
 - All changes must be traceable, reversible, and understood by the user
 
 ## Technology Preferences
 
-- Cloud: GCP-native (Cloud Run, Cloud Build, GCS, Pub/Sub, Secret Manager, Cloud SQL)
-- IaC: Terraform with remote GCS state, modular structure
-- Logging: Google Cloud Structured Logging (JSON), severity levels enforced
-- Auth: Workload Identity — no service account key files
-- Testing: TDD, pytest (Python), Jest/Vitest (TypeScript)
+- Cloud: {{YOUR_CLOUD}} (e.g. AWS, GCP, Azure)
+- IaC: {{YOUR_IAC}} (e.g. Terraform, Pulumi, CDK)
+- Testing: {{YOUR_TESTING}} (e.g. TDD, pytest, Jest)
 
 ## Communication Style
 
 - State the what and why before acting
 - Flag uncertainty immediately — never paper over a knowledge gap
 - Prefer tables and bullet lists over prose
-- Code and config proposals must be complete and verified — no placeholders in output
+
+## Example (delete this section after filling in your details above)
+
+```
+## Role
+- Senior Software Engineer
+- Builds distributed backend services in Go and Python
+- Architecture standard: Clean Architecture
+```

@@ -6,56 +6,72 @@ title: SKILL.md Specification
 
 ## Directory Naming
 
-Every skill is a directory under `$LLM_SKILLS_HOME/skills/`. The directory name encodes the skill's identity and lifecycle state:
-
-```
-<name>.<state>
-```
+Every skill is a directory under `$SKILLFORGE_DIR/skills/`. Directory location encodes the skill's lifecycle state; the directory name encodes its identity only.
 
 **Name rules:**
-- Lowercase letters, digits, and hyphens only
-- Must start with a letter
-- Pattern: `^[a-z][a-z0-9-]+$`
-- Examples: `architect`, `manage-skills`, `gcp-project-discoverer`
+- Lowercase letters, digits, and hyphens only; must start with a letter
+- SME skills end with `-sme` (e.g. `architect-sme`, `security-sme`)
+- Workflow skills end with `-wf` (e.g. `git-wf`, `terraform-wf`)
 
-**State values:**
+**Lifecycle state** is determined by directory location:
 
-| State | Directory suffix | Meaning |
+| State | Location | LLM visibility |
 |---|---|---|
-| `active` | `.active` | Production-ready; symlinks exist |
-| `review` | `.review` | Under evaluation; no symlinks |
-| `deactivated` | `.deactivated` | Temporarily disabled; no symlinks |
-| `decommissioned` | `.decommissioned` | Permanently retired; no symlinks |
+| `active` | `skills/{sme,workflow}/<name>/` | Visible (symlinks exist in production) |
+| `staging` | `skills/staging/{sme,workflow}/<name>/` | Test only (symlinks in `skills-staging/` only) |
+| `review` | `skills/review/{sme,workflow}/<name>/` | Hidden (no symlinks) |
+| `deactivated` | `skills/deactivated/{sme,workflow}/<name>/` | Hidden (no symlinks) |
+| `decommissioned` | `skills/decommissioned/{sme,workflow}/<name>/` | Hidden (no symlinks) |
+
+Transitioning between states is a directory move. The `name:` field in `SKILL.md` is always just the skill name — it never includes a state suffix.
 
 ## SKILL.md Format
 
-Each skill directory must contain a `SKILL.md` file with a YAML frontmatter block:
+Each skill directory must contain a `SKILL.md` file with a YAML frontmatter block followed by the skill body:
 
 ```markdown
 ---
-name: <name>
-description: <one-line description>
-disable-model-invocation: true
+name: <skill-name>
+description: <one-line description — what it does and when to invoke it>
+metadata:
+  skill-type: sme-persona | workflow | system
+  version: "1.0"
+  memory-file: <group>/<skill-name>.md
+  related-skills: [<skill-a>, <skill-b>]
+  disable-model-invocation: true
 ---
 
-# Skill body (optional, skill-specific content)
+# Skill body
 ```
 
 ### Required Frontmatter Fields
 
 | Field | Type | Rules |
 |---|---|---|
-| `name` | string | Must exactly match the directory name prefix (before the last `.`) |
+| `name` | string | Must exactly match the directory name (e.g. `git-sme`) |
 | `description` | string | Non-empty; one line; describes what the skill does and when to invoke it |
-| `disable-model-invocation` | boolean | Must be `true` — prevents recursive skill invocation |
+| `metadata.skill-type` | string | One of: `sme-persona`, `workflow`, `system` |
+| `metadata.version` | string | Semantic version string (e.g. `"1.0"`) |
+| `metadata.disable-model-invocation` | boolean | Must be `true` — prevents recursive skill invocation |
 
-### Example: Expertise Skill
+### Optional Frontmatter Fields
+
+| Field | Type | Purpose |
+|---|---|---|
+| `metadata.memory-file` | string | Path to the skill's memory file relative to `$SKILLFORGE_DIR/memory/` |
+| `metadata.related-skills` | list | Skills that this skill activates or coordinates with |
+
+### Example: SME Skill
 
 ```markdown
 ---
-name: architect
+name: architect-sme
 description: Apply systems architect expertise for HLD generation and design reviews. Invoke when designing new systems or validating architectural patterns.
-disable-model-invocation: true
+metadata:
+  skill-type: sme-persona
+  version: "1.0"
+  memory-file: sme/architect.md
+  disable-model-invocation: true
 ---
 
 # System Architect Expertise
@@ -68,55 +84,74 @@ disable-model-invocation: true
 - **Constraints**: No infrastructure leaks into the domain layer.
 ```
 
-### Example: Workflow Skill
+### Example: Workflow Skill with Subflows
 
 ```markdown
 ---
-name: git-commit
-description: Guide a structured git commit workflow with staged diff review and confirmation gate. Invoke when committing changes to a repository.
-disable-model-invocation: true
+name: git-wf
+description: Git operations router. Detects GitHub or GitLab and routes to the correct sub-skill. Invoke for any git or platform operation.
+metadata:
+  skill-type: workflow
+  version: "1.0"
+  memory-file: workflow/git.md
+  related-skills: [github-wf, gitlab-wf]
+  disable-model-invocation: true
 ---
 
-# Git Commit Workflow
+# Manage Git
 
-## Steps
+## Workflow
+### 1. Detect Provider
+...
 
-### 1. Inspect staged changes
-Run `git diff --staged` and summarise what will be committed.
-
-### 2. Draft commit message
-Write a concise message: imperative mood, ≤72 chars subject line.
-
-### 3. Confirm with user
-Present the diff summary and message. Do not commit without explicit approval.
-
-### 4. Execute
-Upon approval: `git commit -m "<message>"`. Verify with `git log --oneline -1`.
+## Subflows
+| File | Load when |
+|---|---|
+| `subflows/git-clone-sf.md` | User wants to clone a repository |
+| `subflows/git-branch-sf.md` | User wants branch operations |
 ```
+
+## Directory Structure
+
+```
+skills/
+  sme/
+    <name>-sme/
+      SKILL.md                — required
+      references/             — optional, lazy-loaded static docs
+        <name>.md
+  workflow/
+    <name>-wf/
+      SKILL.md                — required
+      subflows/               — optional, lazy-loaded sub-processes
+        <name>-<action>-sf.md
+      references/             — optional, static lookup data
+        <name>.md
+  staging/
+    sme/<name>-sme/
+    workflow/<name>-wf/
+  deactivated/
+    sme/<name>-sme/
+    workflow/<name>-wf/
+  review/
+    sme/<name>-sme/
+    workflow/<name>-wf/
+  decommissioned/
+    sme/<name>-sme/
+    workflow/<name>-wf/
+```
+
+## Subflow Convention
+
+Subflows live in `subflows/` inside a workflow skill. They are not symlinked and have no frontmatter — they are plain Markdown loaded lazily by the parent workflow when the user's intent matches.
+
+Subflow file names follow: `<parent-skill>-<action>-sf.md`
+Examples: `git-clone-sf.md`, `document-readme-sf.md`, `mermaid-write-sf.md`
 
 ## Reference Files
 
-For content longer than ~10 lines that is only needed in specific steps, extract it into a `references/` subdirectory and link lazily:
-
-```
-manage-skills.active/
-  SKILL.md
-  references/
-    marketplace-overlap.md
-    mcp-playbook.md
-```
-
-In `SKILL.md`, add a `## References` section:
-
-```markdown
-## References
-
-- `references/marketplace-overlap.md` — plugin conflict data; read during activation only
-- `references/mcp-playbook.md` — MCP server setup; read only when asked about MCP infrastructure
-```
-
-This keeps `SKILL.md` lean and avoids loading large content on every invocation.
+For static content longer than ~10 lines that is only needed in specific steps, extract it into `references/` and link lazily in the `## References` section of `SKILL.md`.
 
 ## Validation
 
-Run `agents audit` to validate all `SKILL.md` files. CI enforces these rules automatically on every PR via `.github/workflows/validate.yml`.
+Run `skillforge audit` to validate all `SKILL.md` files locally. CI enforces these rules automatically on every PR via `.github/workflows/validate.yml`.

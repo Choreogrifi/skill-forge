@@ -24,7 +24,7 @@ Create now / Defer / Decline?
 
 ## Response Handling
 
-- **Create now** → invoke `manage-skills` → Op 2
+- **Create now** → invoke `skills-wf` → Op 2
 - **Defer** → write plan stub to `~/.llm-assets/memory/deferred-skills/<name>-YYYY-MM-DD.md`
   and confirm the full path to the user
 - **Decline** → suppress this skill proposal for the rest of the session

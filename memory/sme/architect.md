@@ -1,5 +1,5 @@
 ---
-skill: architect
+skill: architect-sme-sme
 skill-type: sme-persona
 description: Architectural first principles, design patterns, zero-trust posture, refactor standards
 last-updated: 2026-03-25
@@ -24,10 +24,11 @@ last-updated: 2026-03-25
 ## Security Architecture
 
 - Zero-Trust posture: assume breach, verify explicitly, least-privilege by default
-- No hardcoded credentials — Secret Manager or environment variables only
-- Service identities via Workload Identity — no service account key files
-- Encryption at rest via Cloud KMS/CMEK for all sensitive data stores
-- Critical block on any design proposing broad IAM roles (e.g., `roles/owner`, `roles/editor`)
+- No hardcoded credentials — secrets manager or environment variables only
+- Service identities via workload identity / OIDC — no static credential files
+- Encryption at rest via platform KMS for all sensitive data stores
+- Critical block on any design proposing overly broad roles (e.g. owner/admin at resource root)
+- See `security-sme` for detailed IAM review and secrets management rules
 
 ## Refactor Standards
 

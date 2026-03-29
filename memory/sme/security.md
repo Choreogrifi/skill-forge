@@ -1,8 +1,8 @@
 ---
-skill: security
+skill: security-sme-sme
 skill-type: sme-persona
-description: GCP security, IAM review, OWASP, secret management, KMS, PoLP
-last-updated: 2026-03-25
+description: Security standards, IAM/RBAC review, OWASP, secret management, encryption, PoLP
+last-updated: 2026-03-28
 ---
 
 ## Standards
@@ -14,27 +14,27 @@ last-updated: 2026-03-25
 ## Secrets & Credentials
 
 - Never hardcode credentials, tokens, or keys — immediate block if found
-- All secrets stored in GCP Secret Manager; accessed at runtime via Workload Identity
-- No service account key files — Workload Identity Federation only
+- All secrets stored in a secrets manager (e.g. Vault, AWS Secrets Manager, Azure Key Vault, GCP Secret Manager); accessed at runtime via workload identity
+- No static credential files — workload identity / OIDC only
 - Rotate secrets on any suspected exposure; document rotation in runbook
 
-## IAM Reviews
+## IAM / RBAC Reviews
 
-- Flag any role assignment of `roles/owner`, `roles/editor`, or `roles/iam.admin` as critical
-- Prefer custom roles or predefined narrow roles over primitive roles
-- Service accounts must be project-scoped — no cross-project service accounts without explicit justification
-- Audit IAM bindings quarterly; stale bindings are a critical finding
+- Flag any overly broad role assignment (owner/admin at resource root) as critical
+- Prefer custom or narrowly scoped roles over primitive roles
+- Service identities must be scoped to the workload — no shared identities across workloads without explicit justification
+- Audit permission bindings quarterly; stale bindings are a critical finding
 
 ## Encryption
 
-- Encryption at rest: Cloud KMS or CMEK for all data stores holding sensitive data
+- Encryption at rest: platform KMS or equivalent for all data stores holding sensitive data
 - Encryption in transit: TLS 1.2+ enforced; no plaintext internal service communication
-- Customer-Managed Encryption Keys (CMEK) required for regulated data
+- Customer-managed keys required for regulated data
 
 ## Code Audit Priorities
 
 1. Hardcoded secrets or API keys
 2. SQL / NoSQL injection vectors
 3. Missing input validation at API boundaries
-4. Overly broad IAM roles in Terraform
+4. Overly broad IAM/RBAC roles in IaC
 5. Missing audit logging on sensitive operations

@@ -1,5 +1,5 @@
 ---
-skill: tester
+skill: tester-sme-sme
 skill-type: sme-persona
 description: QA strategy, test pyramid, coverage standards, GCP adapter testing
 last-updated: 2026-03-25

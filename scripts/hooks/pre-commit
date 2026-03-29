@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# pre-commit — skill naming convention check
+#
+# Installed by scripts/install.sh into .git/hooks/pre-commit
+# Run manually: bash scripts/hooks/pre-commit
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+bash "${REPO_ROOT}/scripts/check-skill-names.sh" --staged

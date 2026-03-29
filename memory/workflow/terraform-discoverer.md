@@ -24,4 +24,4 @@ last-updated: 2026-03-25
 ## Output Format
 
 Return a structured resource proposal only — no HCL. The proposal is consumed by
-`terraform-creator` to pre-populate its generation step.
+`terraform-wf` to pre-populate its generation step.

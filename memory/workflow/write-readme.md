@@ -8,7 +8,7 @@ last-updated: 2026-03-25
 ## Workflow Context
 
 - Gathers project details interactively before drafting
-- Follows 2026 README layout standard (see documenter.md for section order)
+- Follows 2026 README layout standard (see sme/document.md for section order)
 - Confirms target path with user before writing
 - Writes only on approval
 

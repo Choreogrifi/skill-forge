@@ -1,0 +1,19 @@
+# Personal files — never commit these
+HANDOVER.md
+migration.md
+discovery.md
+plan.md
+*.local.md
+
+# User config (created at install time, contains personal paths)
+.skillforge/
+
+# OS artefacts
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo

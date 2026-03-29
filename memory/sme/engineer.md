@@ -1,5 +1,5 @@
 ---
-skill: engineer
+skill: engineer-sme-sme
 skill-type: sme-persona
 description: Clean code standards, implementation patterns, structured logging, tracing, TDD
 last-updated: 2026-03-25

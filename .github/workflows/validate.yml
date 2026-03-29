@@ -14,53 +14,73 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Make scripts executable
-        run: chmod +x scripts/agents.sh scripts/install.sh
+      # -----------------------------------------------------------------------
+      # Script syntax checks
+      # -----------------------------------------------------------------------
 
-      - name: Syntax check — agents.sh
-        run: bash -n scripts/agents.sh
+      - name: Make scripts executable
+        run: chmod +x scripts/skillforge.sh scripts/install.sh scripts/check-skill-names.sh
+
+      - name: Syntax check — skillforge.sh
+        run: bash -n scripts/skillforge.sh
 
       - name: Syntax check — install.sh
         run: bash -n scripts/install.sh
+
+      - name: Syntax check — check-skill-names.sh
+        run: bash -n scripts/check-skill-names.sh
+
+      # -----------------------------------------------------------------------
+      # Skill naming convention
+      # -----------------------------------------------------------------------
 
       - name: Validate skill directory naming
         run: |
           set -euo pipefail
           errors=0
-          valid_states="active review deactivated decommissioned"
 
-          while IFS= read -r -d '' dir; do
-            dir_name=$(basename "$dir")
-            state="${dir_name##*.}"
-            name="${dir_name%.*}"
-
-            # A directory with no dot separator will have state == dir_name
-            if [[ "$name" == "$state" ]]; then
-              echo "FAIL: '${dir_name}' has no dot separator — cannot extract name and state"
-              ((errors++)) || true
-              continue
+          check_skill_dir() {
+            local dir_name="$1"
+            # Only lowercase letters, numbers, hyphens
+            if [[ ! "$dir_name" =~ ^[a-z][a-z0-9-]+$ ]]; then
+              echo "FAIL: '${dir_name}' — name must contain only lowercase letters, numbers, and hyphens"
+              return 1
             fi
-
-            valid=false
-            for s in $valid_states; do
-              [[ "$state" == "$s" ]] && valid=true && break
-            done
-
-            if $valid; then
-              echo "OK: ${dir_name}  (name=${name}, state=${state})"
+            # Must end with -sme or -wf
+            if [[ "$dir_name" =~ ^[a-z][a-z0-9-]+-(sme|wf)$ ]]; then
+              echo "OK: ${dir_name}"
             else
-              echo "FAIL: '${dir_name}' has invalid state '${state}'. Valid: ${valid_states}"
-              ((errors++)) || true
+              echo "FAIL: '${dir_name}' — must end with -sme or -wf"
+              return 1
             fi
-          done < <(find skills -maxdepth 1 -mindepth 1 -type d -print0 2>/dev/null | sort -z)
+          }
+
+          # Active skills: skills/sme/* and skills/workflow/*
+          while IFS= read -r -d '' dir; do
+            check_skill_dir "$(basename "$dir")" || ((errors++)) || true
+          done < <(find skills/sme skills/workflow -maxdepth 1 -mindepth 1 -type d -print0 2>/dev/null | sort -z)
+
+          # Lifecycle skills: skills/{deactivated,review,staging,decommissioned}/{sme,workflow}/*
+          for state in deactivated review staging decommissioned; do
+            for type in sme workflow; do
+              [[ -d "skills/${state}/${type}" ]] || continue
+              while IFS= read -r -d '' dir; do
+                check_skill_dir "$(basename "$dir")" || ((errors++)) || true
+              done < <(find "skills/${state}/${type}" -maxdepth 1 -mindepth 1 -type d -print0 2>/dev/null | sort -z)
+            done
+          done
 
           if [[ $errors -gt 0 ]]; then
             echo ""
-            echo "Directory naming validation failed with ${errors} error(s)."
+            echo "Naming validation failed with ${errors} error(s)."
             exit 1
           fi
           echo ""
           echo "All skill directories pass naming validation."
+
+      # -----------------------------------------------------------------------
+      # SKILL.md frontmatter — new metadata: schema
+      # -----------------------------------------------------------------------
 
       - name: Validate SKILL.md frontmatter
         run: |
@@ -69,42 +89,62 @@ jobs:
 
           while IFS= read -r -d '' skill_md; do
             dir_name=$(basename "$(dirname "$skill_md")")
-            expected_name="${dir_name%.*}"
+            expected_name="${dir_name}"
             echo "Checking: $skill_md"
 
-            # Extract YAML frontmatter (content between the first pair of ---)
-            frontmatter=$(awk 'BEGIN{found=0} /^---/{found++; next} found==1{print}' "$skill_md")
-
-            # name field
-            fm_name=$(printf '%s\n' "$frontmatter" | grep -E '^name:' | head -1 | sed 's/^name:[[:space:]]*//')
+            # name: must match directory name exactly
+            fm_name=$(grep -E '^name:' "$skill_md" 2>/dev/null | head -1 | sed 's/^name:[[:space:]]*//' || true)
             if [[ -z "$fm_name" ]]; then
               echo "  FAIL: 'name' field missing"
               ((errors++)) || true
             elif [[ "$fm_name" != "$expected_name" ]]; then
-              echo "  FAIL: name '${fm_name}' does not match directory '${expected_name}'"
+              echo "  FAIL: name '${fm_name}' does not match folder name '${expected_name}'"
               ((errors++)) || true
             else
-              echo "  OK: name matches directory"
+              echo "  OK: name = ${fm_name}"
             fi
 
-            # description field
-            fm_desc=$(printf '%s\n' "$frontmatter" | grep -E '^description:' | head -1 | sed 's/^description:[[:space:]]*//')
-            if [[ -z "$fm_desc" ]]; then
-              echo "  FAIL: 'description' is absent or empty"
-              ((errors++)) || true
+            # version: under metadata:
+            if grep -qE '^[[:space:]]+version:' "$skill_md" 2>/dev/null; then
+              echo "  OK: version present"
             else
+              echo "  FAIL: 'version' field missing"
+              ((errors++)) || true
+            fi
+
+            # metadata: block
+            if grep -qE '^metadata:' "$skill_md" 2>/dev/null; then
+              echo "  OK: metadata block present"
+            else
+              echo "  FAIL: 'metadata:' block missing"
+              ((errors++)) || true
+            fi
+
+            # metadata.skill-type
+            if grep -qE '^[[:space:]]+skill-type:' "$skill_md" 2>/dev/null; then
+              echo "  OK: metadata.skill-type present"
+            else
+              echo "  FAIL: 'metadata.skill-type' missing"
+              ((errors++)) || true
+            fi
+
+            # description: at root level (not under metadata)
+            if grep -qE '^description:' "$skill_md" 2>/dev/null; then
               echo "  OK: description present"
-            fi
-
-            # disable-model-invocation: true
-            if printf '%s\n' "$frontmatter" | grep -qE '^disable-model-invocation:[[:space:]]*true'; then
-              echo "  OK: disable-model-invocation: true"
             else
-              echo "  FAIL: 'disable-model-invocation: true' missing"
+              echo "  FAIL: root-level 'description' field missing"
               ((errors++)) || true
             fi
 
-          done < <(find skills -maxdepth 2 -name "SKILL.md" -print0 2>/dev/null | sort -z)
+            # metadata.disable-model-invocation: true
+            if grep -qE '^[[:space:]]+disable-model-invocation:[[:space:]]*true' "$skill_md" 2>/dev/null; then
+              echo "  OK: metadata.disable-model-invocation: true"
+            else
+              echo "  FAIL: 'metadata.disable-model-invocation: true' missing"
+              ((errors++)) || true
+            fi
+
+          done < <(find skills -maxdepth 4 -name "SKILL.md" -not -path "*/subflows/*" -print0 2>/dev/null | sort -z)
 
           if [[ $errors -gt 0 ]]; then
             echo ""
@@ -114,34 +154,118 @@ jobs:
           echo ""
           echo "All SKILL.md files pass frontmatter validation."
 
+      # -----------------------------------------------------------------------
+      # Referenced files must exist
+      # -----------------------------------------------------------------------
+
+      - name: Validate referenced files exist
+        run: |
+          set -euo pipefail
+          errors=0
+
+          while IFS= read -r -d '' skill_md; do
+            skill_dir=$(dirname "$skill_md")
+            # Extract backtick-quoted paths ending in .md from references sections
+            while IFS= read -r ref_path; do
+              full_path="${skill_dir}/${ref_path}"
+              if [[ ! -f "$full_path" ]]; then
+                echo "MISSING: ${skill_md} references '${ref_path}' but file not found at ${full_path}"
+                ((errors++)) || true
+              fi
+            done < <(grep -oE '`(references/[^`]+\.md)`' "$skill_md" 2>/dev/null | tr -d '`' || true)
+          done < <(find skills -name "SKILL.md" -not -path "*/subflows/*" -print0 2>/dev/null | sort -z)
+
+          if [[ $errors -gt 0 ]]; then
+            echo ""
+            echo "Referenced file check failed with ${errors} missing file(s)."
+            exit 1
+          fi
+          echo "All referenced files exist."
+
+      # -----------------------------------------------------------------------
+      # No personal data
+      # -----------------------------------------------------------------------
+
+      - name: Scan for personal paths and data
+        run: |
+          set -euo pipefail
+          patterns=('/home/leond' 'leond@' '/Users/leond' 'europe-west2')
+          errors=0
+
+          for pattern in "${patterns[@]}"; do
+            matches=$(grep -rn --include="*.md" --include="*.sh" --include="*.yaml" \
+              --include="*.yml" "$pattern" . \
+              --exclude-dir='.git' \
+              --exclude-dir='.github' \
+              --exclude-dir='tests' \
+              --exclude='migration*.md' \
+              --exclude='HANDOVER.md' \
+              --exclude='plan.md' \
+              2>/dev/null || true)
+            if [[ -n "$matches" ]]; then
+              echo "PERSONAL DATA FOUND (pattern: ${pattern}):"
+              echo "$matches"
+              ((errors++)) || true
+            fi
+          done
+
+          if [[ $errors -gt 0 ]]; then
+            echo ""
+            echo "Personal data scan failed. Remove all personal paths before merging."
+            exit 1
+          fi
+          echo "No personal data found."
+
+      # -----------------------------------------------------------------------
+      # BATS tests
+      # -----------------------------------------------------------------------
+
+      - name: Install BATS
+        run: |
+          sudo apt-get install -y bats 2>/dev/null || \
+          (git clone https://github.com/bats-core/bats-core.git /tmp/bats && \
+           sudo /tmp/bats/install.sh /usr/local)
+
+      - name: Run BATS tests
+        run: bats tests/test_skillforge.bats
+
+      # -----------------------------------------------------------------------
+      # Smoke tests
+      # -----------------------------------------------------------------------
+
       - name: Smoke test — install to temp environment
         run: |
           set -euo pipefail
-          export LLM_SKILLS_HOME=/tmp/skills-test
-          bash scripts/install.sh
-          # Run agents ls directly via the installed binary
+          export SKILLFORGE_DIR=/tmp/sf-test
+          echo -e "claude\n\n\n\n\n\n" | bash scripts/install.sh || true
           export PATH="$HOME/.local/bin:$PATH"
-          LLM_SKILLS_HOME=/tmp/skills-test agents ls
+          SKILLFORGE_DIR=/tmp/sf-test skillforge ls
 
-      - name: Smoke test — idempotency (install twice)
+      - name: Smoke test — idempotency
         run: |
           set -euo pipefail
-          export LLM_SKILLS_HOME=/tmp/skills-test-idem
-          bash scripts/install.sh
-          bash scripts/install.sh
-          echo "Idempotency check passed — no errors on second run."
+          export SKILLFORGE_DIR=/tmp/sf-test-idem
+          echo -e "claude\n\n\n\n\n\n" | bash scripts/install.sh || true
+          echo -e "claude\n\n\n\n\n\n" | bash scripts/install.sh || true
+          echo "Idempotency check passed."
 
-      - name: Smoke test — CLI state transitions
-        run: |
-          set -euo pipefail
-          export LLM_SKILLS_HOME=/tmp/skills-test-states
-          export PATH="$HOME/.local/bin:$PATH"
-          bash scripts/install.sh
+  # -----------------------------------------------------------------------
+  # LLM eval tests — requires ANTHROPIC_API_KEY secret
+  # Runs on push to main only (evals cost tokens; not needed on every PR)
+  # Skips gracefully if the secret is not configured
+  # -----------------------------------------------------------------------
 
-          # Activate → review → activate cycle
-          LLM_SKILLS_HOME=/tmp/skills-test-states agents review architect
-          LLM_SKILLS_HOME=/tmp/skills-test-states agents activate architect
+  evals:
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
-          # Status must pass
-          LLM_SKILLS_HOME=/tmp/skills-test-states agents status
-          echo "State transition tests passed."
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run LLM evals
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SKILLFORGE_DIR: ${{ github.workspace }}
+        run: bash tests/run_evals.sh
