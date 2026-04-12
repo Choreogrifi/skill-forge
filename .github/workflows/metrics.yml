@@ -1,0 +1,35 @@
+name: Metrics
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 06:00 UTC daily
+  workflow_dispatch:       # allow manual trigger
+
+jobs:
+  collect:
+    name: Collect GitHub traffic metrics
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read       # read repo traffic via GitHub API
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/requirements-metrics.txt
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements-metrics.txt
+
+      - name: Collect and push metrics
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Google Sheets — configure before enabling
+          # See scripts/collect_metrics.py for setup instructions
+          SHEETS_SERVICE_ACCOUNT_JSON: ${{ secrets.SHEETS_SERVICE_ACCOUNT_JSON }}
+          METRICS_SHEET_ID: ${{ secrets.METRICS_SHEET_ID }}
+        run: python scripts/collect_metrics.py
